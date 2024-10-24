@@ -1,0 +1,108 @@
+# Based on msys2-w32api-runtime and msys2-w32api-headers
+
+pkgname="msys2-w32api-opengl"
+pkgver=12.0.0.r0.g819a6ec2e
+pkgrel=1
+pkgdesc="Win32/Win64 openGL headers and libs for MSys2 toolchain"
+arch=('i686' 'x86_64')
+url="https://mingw-w64.sourceforge.io/"
+license=('custom')
+depends=()
+makedepends=('git' 'autotools')
+if [[ "${CARCH}" == 'i686' ]]; then
+  makedepends+=('mingw-w64-cross-mingw32-gcc')
+else
+  makedepends+=('mingw-w64-cross-mingw64-gcc')
+fi
+options=('staticlibs' '!buildflags')
+_commit='819a6ec2ea87c19814b287e21d65e0dc7f05abba'
+source=("mingw-w64"::"git+https://git.code.sf.net/p/mingw-w64/mingw-w64#commit=$_commit"
+        '0001-Work-around-Warray-bounds-warning-for-__readfsdword-.patch'
+        '0101-Remove-include-of-windows.h.patch')
+sha256sums=('41878f44fe3b6c347fc99ab8a90d384f61bd3ae25cfb2a62a7e24d4f0d14f720'
+            '189dd0f614caae1428e1d3a06bc3ac436d26afd9cbdbd1a7ce58b1ee6478ff3f'
+            '540945ea5fbb6fa7c7bbbb7339ee664255058416ecaff53868516600e94ff9eb')
+msys2_references=(
+  'cygwin: w32api-runtime'
+  'cpe: cpe:/a:mingw-w64:mingw-w64'
+)
+
+pkgver() {
+  cd "${srcdir}/mingw-w64"
+  git describe --long ${_commit} | sed 's/\([^-]*-g\)/r\1/;s/-/./g;s/^v//g'
+}
+
+prepare() {
+  cd ${srcdir}/mingw-w64
+
+  patch -Np1 -i "${srcdir}"/0001-Work-around-Warray-bounds-warning-for-__readfsdword-.patch
+  patch -Np1 -i "${srcdir}"/0101-Remove-include-of-windows.h.patch
+}
+
+_crt_build() {
+  cd ${srcdir}/mingw-w64/mingw-w64-crt
+
+  local _libs=
+  case ${CARCH} in
+    i686)
+      _libs="--enable-lib32 --disable-lib64"
+    ;;
+    x86_64)
+      _libs="--enable-lib64 --disable-lib32"
+    ;;
+  esac
+
+  unset CC CXX
+
+  ./configure \
+  --prefix=/crt \
+  --build=${CHOST} \
+  --host=${CARCH}-w64-mingw32 \
+  --enable-w32api \
+  --disable-dependency-tracking \
+  ${_libs} \
+  CFLAGS='-I/usr/include/w32api' \
+  CXXFLAGS='-I/usr/include/w32api' \
+  CPPFLAGS='-I/usr/include/w32api'
+
+  make
+}
+
+_headers_build() {
+  cd ${srcdir}/mingw-w64/mingw-w64-headers
+
+  unset CC CXX
+
+  ./configure \
+     --build=${CHOST} \
+     --host=${CARCH}-w64-mingw32 \
+     --prefix=/usr \
+     --enable-w32api \
+     --enable-sdk=no \
+     --with-default-win32-winnt=0x601
+
+  make
+}
+
+build() {
+  _headers_build
+  _crt_build
+}
+
+package() {
+  cd ${srcdir}/mingw-w64/mingw-w64-headers
+
+  make DESTDIR=${pkgdir} install
+  mv ${pkgdir}/usr/include/w32api/GL ${pkgdir}/usr/include/GL
+  rm -f ${pkgdir}/usr/include/GL/glaux.h
+  rm -fr ${pkgdir}/usr/include/w32api
+
+  cd ${srcdir}/mingw-w64/mingw-w64-crt
+
+  make DESTDIR=${pkgdir} install
+  mkdir -p ${pkgdir}/usr/lib
+  mv ${pkgdir}/crt/lib/w32api/libopengl32.a ${pkgdir}/usr/lib/
+  mv ${pkgdir}/crt/lib/w32api/libglu32.a    ${pkgdir}/usr/lib/
+  mv ${pkgdir}/crt/lib/w32api/libglmf32.a   ${pkgdir}/usr/lib/
+  rm -fr ${pkgdir}/crt
+}
