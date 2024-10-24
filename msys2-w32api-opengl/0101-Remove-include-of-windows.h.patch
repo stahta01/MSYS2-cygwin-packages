@@ -1,0 +1,96 @@
+From 2787607434f4a27cfe105ca1033fd516f672483e Mon Sep 17 00:00:00 2001
+From: Tim Stahlhut <stahta01@gmail.com>
+Date: Thu, 24 Oct 2024 18:46:38 -0400
+Subject: Remove include of "windows.h"
+
+---
+ mingw-w64-headers/include/GL/gl.h        | 4 ----
+ mingw-w64-headers/include/GL/glcorearb.h | 6 ------
+ mingw-w64-headers/include/GL/glext.h     | 6 ------
+ mingw-w64-headers/include/GL/wgl.h       | 4 ----
+ mingw-w64-headers/include/GL/wglext.h    | 4 ----
+ 5 files changed, 24 deletions(-)
+
+diff --git a/mingw-w64-headers/include/GL/gl.h b/mingw-w64-headers/include/GL/gl.h
+index b10d4137f..c67b2b483 100644
+--- a/mingw-w64-headers/include/GL/gl.h
++++ b/mingw-w64-headers/include/GL/gl.h
+@@ -9,11 +9,7 @@
+ #define __gl_h_
+ #define __GL_H__
+ 
+-#if !(defined(WINGDIAPI) && defined(APIENTRY))
+-#include <windows.h>
+-#else
+ #include <stddef.h>
+-#endif
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git a/mingw-w64-headers/include/GL/glcorearb.h b/mingw-w64-headers/include/GL/glcorearb.h
+index 3f76c23ad..78ccf3446 100644
+--- a/mingw-w64-headers/include/GL/glcorearb.h
++++ b/mingw-w64-headers/include/GL/glcorearb.h
+@@ -34,12 +34,6 @@ extern "C" {
+ **   https://github.com/KhronosGroup/OpenGL-Registry
+ */
+ 
+-#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+-#ifndef WIN32_LEAN_AND_MEAN
+-#define WIN32_LEAN_AND_MEAN 1
+-#endif
+-#include <windows.h>
+-#endif
+ 
+ #ifndef APIENTRY
+ #define APIENTRY
+diff --git a/mingw-w64-headers/include/GL/glext.h b/mingw-w64-headers/include/GL/glext.h
+index fe03eb6f3..b2d76ce0a 100644
+--- a/mingw-w64-headers/include/GL/glext.h
++++ b/mingw-w64-headers/include/GL/glext.h
+@@ -34,12 +34,6 @@ extern "C" {
+ **   https://github.com/KhronosGroup/OpenGL-Registry
+ */
+ 
+-#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+-#ifndef WIN32_LEAN_AND_MEAN
+-#define WIN32_LEAN_AND_MEAN 1
+-#endif
+-#include <windows.h>
+-#endif
+ 
+ #ifndef APIENTRY
+ #define APIENTRY
+diff --git a/mingw-w64-headers/include/GL/wgl.h b/mingw-w64-headers/include/GL/wgl.h
+index 3f94946e0..ad1f158cf 100644
+--- a/mingw-w64-headers/include/GL/wgl.h
++++ b/mingw-w64-headers/include/GL/wgl.h
+@@ -34,10 +34,6 @@ extern "C" {
+ **   https://github.com/KhronosGroup/OpenGL-Registry
+ */
+ 
+-#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+-#define WIN32_LEAN_AND_MEAN 1
+-#include <windows.h>
+-#endif
+ 
+ /* Generated on date 20190228 */
+ 
+diff --git a/mingw-w64-headers/include/GL/wglext.h b/mingw-w64-headers/include/GL/wglext.h
+index cb31ac453..7c59eb1d8 100644
+--- a/mingw-w64-headers/include/GL/wglext.h
++++ b/mingw-w64-headers/include/GL/wglext.h
+@@ -34,10 +34,6 @@ extern "C" {
+ **   https://github.com/KhronosGroup/OpenGL-Registry
+ */
+ 
+-#if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
+-#define WIN32_LEAN_AND_MEAN 1
+-#include <windows.h>
+-#endif
+ 
+ #define WGL_WGLEXT_VERSION 20190228
+ 
+-- 
+2.45.2.windows.1
+
