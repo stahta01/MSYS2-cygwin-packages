@@ -1,0 +1,97 @@
+# Contributor: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Renato Silva <br.renatosilva@gmail.com>
+# Based on https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-fontconfig
+# See also https://gitlab.archlinux.org/archlinux/packaging/packages/fontconfig
+
+_realname=fontconfig
+pkgbase=${_realname}
+pkgname="${_realname}"
+pkgver=2.15.0
+pkgrel=2
+pkgdesc="A library for configuring and customizing font access"
+url="https://wiki.freedesktop.org/www/Software/fontconfig/"
+msys2_repository_url="https://gitlab.freedesktop.org/fontconfig/fontconfig"
+msys2_references=(
+  "cpe: cpe:/a:fontconfig_project:fontconfig"
+)
+backup=(etc/fonts/fonts.conf)
+install=fontconfig.install
+license=("custom")
+makedepends=(gcc
+             meson
+             gperf
+             'libexpat-devel')
+depends=(gcc-libs
+         expat
+         freetype)
+source=("https://www.freedesktop.org/software/fontconfig/release/fontconfig-${pkgver}.tar.xz"
+        0010-fix-relocation.patch
+        0011-conf-copy-instead-of-symlink.patch
+        https://gitlab.freedesktop.org/fontconfig/fontconfig/-/commit/a76b95105ca26c600279b2daf4bd43b37a918823.patch)
+sha256sums=('63a0658d0e06e0fa886106452b58ef04f21f58202ea02a94c39de0d3335d7c0e'
+            '1506f01dcc7c8b80a9e7fbe56720742bd9134c8e4c3321579fd44dbe1aac028d'
+            '73ed74a1f4624466084d219e2fbc0d5780da9f63763f1307629251e58cccf2cd'
+            'c225c156c4732a492c9588c8d33705ca29af6f3195f201f4012b09ff012f1831')
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  # backport because it seems relevant for us
+  patch -p1 -i ${srcdir}/a76b95105ca26c600279b2daf4bd43b37a918823.patch
+
+  patch -p1 -i ${srcdir}/0010-fix-relocation.patch
+  patch -p1 -i ${srcdir}/0011-conf-copy-instead-of-symlink.patch
+}
+
+build() {
+  mkdir -p "build-${MSYSTEM_CARCH}-static" && cd "build-${MSYSTEM_CARCH}-static"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    meson setup \
+      --default-library=static \
+      --prefix="${MSYSTEM_PREFIX}" \
+      --wrap-mode=nodownload \
+      --auto-features=enabled \
+      --buildtype=plain \
+      -Ddoc-man=disabled \
+      -Ddoc-txt=disabled \
+      -Ddoc-pdf=disabled \
+      -Ddoc-html=disabled \
+      -Dcache-build=disabled \
+      ../"${_realname}-${pkgver}"
+
+  meson compile
+
+  cd ..
+  mkdir -p "build-${MSYSTEM_CARCH}-shared" && cd "build-${MSYSTEM_CARCH}-shared"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    meson setup \
+      --default-library=shared \
+      --prefix="${MSYSTEM_PREFIX}" \
+      --wrap-mode=nodownload \
+      --auto-features=enabled \
+      --buildtype=plain \
+      -Ddoc-man=disabled \
+      -Ddoc-txt=disabled \
+      -Ddoc-pdf=disabled \
+      -Ddoc-html=disabled \
+      -Dcache-build=disabled \
+      ../"${_realname}-${pkgver}"
+
+  meson compile
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM_CARCH}-static"
+  DESTDIR="${pkgdir}" meson install
+
+  cd "${srcdir}/build-${MSYSTEM_CARCH}-shared"
+  DESTDIR="${pkgdir}" meson install
+
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING" "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/${_realname}/COPYING"
+
+  sed -i "s|${MSYSTEM_PREFIX}/etc$|\${prefix}/etc|g" "${pkgdir}${MSYSTEM_PREFIX}"/lib/pkgconfig/fontconfig.pc
+  sed -i "s|${MSYSTEM_PREFIX}/etc/|\${sysconfdir}/|g" "${pkgdir}${MSYSTEM_PREFIX}"/lib/pkgconfig/fontconfig.pc
+  sed -i "s|${MSYSTEM_PREFIX}/var|\${prefix}/var|g" "${pkgdir}${MSYSTEM_PREFIX}"/lib/pkgconfig/fontconfig.pc
+}
