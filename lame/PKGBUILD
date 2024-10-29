@@ -7,7 +7,7 @@ pkgname=lame
 pkgver=3.100
 pkgrel=5
 pkgdesc='A high quality MPEG Audio Layer III (MP3) encoder'
-arch=(x86_64)
+arch=('i686' 'x86_64')
 url=http://lame.sourceforge.net/
 license=(LGPL)
 depends=(ncurses)
@@ -32,11 +32,23 @@ prepare() {
 build() {
   cd $pkgname-$pkgver
 
+  declare -a _arch_config
+
+  case ${CARCH} in
+    i686)
+    ;;
+    x86_64)
+      _arch_config+=("--enable-nasm")
+    ;;
+  esac
+
   ./configure \
     --prefix='/usr' \
-    --enable-nasm \
     --enable-mp3rtp \
-    --enable-shared
+    --enable-shared \
+    "${_arch_config[@]}"
+
+  make clean
   make
 }
 
