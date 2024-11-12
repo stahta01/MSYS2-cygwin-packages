@@ -1,0 +1,84 @@
+# Contributor: Marty Plummer (The_NetZ) <ntzrmtthihu777 (at) gmail (dot) com>
+
+_realname=sdl2_image
+pkgbase=${_realname}
+pkgname=${_realname}
+pkgver=2.8.2
+pkgrel=3
+pkgdesc="A simple library to load images of various formats as SDL surfaces (Version 2)"
+arch=('i686' 'x86_64')
+url="https://github.com/libsdl-org/SDL_image"
+msys2_references=(
+  "cpe: cpe:/a:libsdl:sdl2_image"
+)
+license=('spdx:Zlib')
+depends=('sdl2'
+         'libavif'
+         'libjxl'
+         'libpng'
+         'libtiff'
+         'libjpeg-turbo'
+         'libwebp')
+makedepends=('gcc' 'autotools')
+source=("https://github.com/libsdl-org/SDL_image/releases/download/release-${pkgver}/SDL2_image-${pkgver}.zip"{,.sig})
+sha256sums=('2196ad6665b68fc453a659e172d67fbf18d548277aa07344dfd2deed9d9b84bd'
+            'SKIP')
+validpgpkeys=('1528635D8053A57F77D1E08630A59377A7763BE6') # Sam Lantinga <slouken@libsdl.org>
+
+build() {
+  local -a _common_config
+  _common_config+=(
+    --disable-avif-shared
+    --disable-jpg-shared
+    --disable-jxl-shared
+    --disable-png-shared
+    --disable-stb-image
+    --disable-tif-shared
+    --disable-webp-shared
+  )
+
+  mkdir -p "${srcdir}/build-${MSYSTEM_CARCH}-static" && cd "${srcdir}/build-${MSYSTEM_CARCH}-static"
+
+  CPPFLAGS+=" -DJXL_STATIC_DEFINE" \
+  ../${_realname}-${pkgver}/configure \
+    --prefix=${MSYSTEM_PREFIX} \
+    --build=${MSYSTEM_CHOST} \
+    --host=${MSYSTEM_CHOST} \
+    --enable-static \
+    --disable-shared \
+    "${_common_config[@]}"
+
+  # Remove AVIF_DLL macro to prevent adding dllimport attribute for static linking
+  find . -name Makefile -exec sed -i "s/-DAVIF_DLL//g" {} \;
+
+  make
+
+  mkdir -p "${srcdir}/build-${MSYSTEM_CARCH}-shared" && cd "${srcdir}/build-${MSYSTEM_CARCH}-shared"
+
+  ../${_realname}-${pkgver}/configure \
+    --prefix=${MSYSTEM_PREFIX} \
+    --build=${MSYSTEM_CHOST} \
+    --host=${MSYSTEM_CHOST} \
+    --enable-shared \
+    --disable-static \
+    "${_common_config[@]}"
+
+  make
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM_CARCH}-static"
+  make DESTDIR="${pkgdir}" install
+
+  cd "${srcdir}/build-${MSYSTEM_CARCH}-shared"
+  make DESTDIR="${pkgdir}" install
+
+  local PREFIX_WIN=$(cygpath -wm ${MSYSTEM_PREFIX})
+  for _f in "${pkgdir}${MSYSTEM_PREFIX}"/lib/cmake/${_realname}/*.cmake; do
+    sed -e "s|${PREFIX_WIN}|\$\{_IMPORT_PREFIX\}|g" -i ${_f}
+    sed -e "s|${MSYSTEM_PREFIX}|\$\{_IMPORT_PREFIX\}|g" -i ${_f}
+  done
+
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE.txt" \
+    "${pkgdir}${MSYSTEM_PREFIX}/share/licenses/${_realname}/LICENSE.txt"
+}
