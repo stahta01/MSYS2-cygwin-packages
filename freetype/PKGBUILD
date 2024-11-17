@@ -28,7 +28,10 @@ fi
 makedepends=(meson
              ninja
              pkgconf
-             gcc)
+             gcc
+             'brotli-devel'
+             'libbz2-devel'
+             'zlib-devel')
 source=(https://download-mirror.savannah.gnu.org/releases/freetype//freetype-${pkgver}.tar.xz{,.sig}
         freetype-2.10.0-enable-valid.patch
         freetype-2.10.0-enable-spr.patch)
