@@ -1,0 +1,28 @@
+post_install() {
+  if [ -n "${MSYS2_FC_CACHE_SKIP}" ]; then
+    echo "Warning: 'MSYS2_FC_CACHE_SKIP' set, skipping font cache update"
+  else
+    echo -n "updating font cache... "
+    usr/bin/fc-cache -f
+    echo "done."
+  fi
+}
+
+post_upgrade() {
+  if [ -n "${MSYS2_FC_CACHE_SKIP}" ]; then
+    echo "Warning: 'MSYS2_FC_CACHE_SKIP' set, skipping font cache update"
+  else
+    echo -n "updating font cache... "
+    usr/bin/fc-cache -f
+    echo "done."
+  fi
+}
+
+post_remove() {
+  cat << _EOF
+
+  Check for dead symlinks and leftover files
+  in usr/etc/fonts/conf.d/
+
+_EOF
+}
