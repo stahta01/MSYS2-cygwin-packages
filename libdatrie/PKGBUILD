@@ -5,7 +5,7 @@ pkgbase=${_realname}
 pkgname=("${_realname}"
          "${_realname}-docs")
 pkgver=0.2.13
-pkgrel=3
+pkgrel=4
 pkgdesc="Implementation of double-array structure for representing trie, as proposed by Junichi Aoe."
 arch=('i686' 'x86_64')
 url='https://linux.thai.net/projects/datrie'
@@ -13,7 +13,8 @@ license=('LGPL')
 depends=("libiconv")
 makedepends=("autotools"
              "gcc"
-             "doxygen")
+             "doxygen"
+             'libiconv-devel')
 source=("https://linux.thai.net/pub/thailinux/software/libthai/${_realname}-${pkgver}.tar.xz")
 sha256sums=('12231bb2be2581a7f0fb9904092d24b0ed2a271a16835071ed97bed65267f4be')
 
