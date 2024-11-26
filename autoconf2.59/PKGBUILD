@@ -1,7 +1,8 @@
 # Contributor: Alexey Pavlov <alexpux@gmail.com>
 # Contributor: Ray Donnelly <mingw.android@gmail.com>
 
-pkgname=autoconf
+_realname=autoconf
+pkgname=${_realname}2.59
 pkgver=2.59
 pkgrel=1
 pkgdesc="A GNU tool for automatically configuring source code"
@@ -13,7 +14,7 @@ depends=('awk' 'm4' 'diffutils' 'bash' 'perl')
 # for test-suite
 # makedepends=('gcc-fortran')
 install=autoconf.install
-source=(https://ftp.gnu.org/pub/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig}
+source=(https://ftp.gnu.org/pub/gnu/${pkgname}/${_realname}-${pkgver}.tar.gz{,.sig}
         0001-fix-texinfo.patch
         0002-msys2.patch
         0003-autotest-remove-cr-from-prog-stdout-stderr.patch)
@@ -24,7 +25,7 @@ sha256sums=('64ebcec9f8ac5b2487125a86a7760d2591ac9e1d3dbd59489633f9de62a57684'
             '74e2135a3f34f5692a77de85c21cb2f0fd8a1dcf396f7fbba7deb0c59faa54eb')
 
 prepare() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${_realname}-${pkgver}
 
   #patch -p1 -i ${srcdir}/0001-fix-texinfo.patch
   #patch -p1 -i ${srcdir}/0002-msys2.patch
@@ -32,23 +33,24 @@ prepare() {
 }
 
 build() {
-  cd ${srcdir}/${pkgname}-${pkgver}
-  ./configure --prefix=/usr
+  cd ${srcdir}/${_realname}-${pkgver}
+  ./configure --prefix=/usr \
+    --program-suffix=-2.59
   make
 }
 
 check() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${_realname}-${pkgver}
   make check
 }
 
 package() {
-  cd ${srcdir}/${pkgname}-${pkgver}
+  cd ${srcdir}/${_realname}-${pkgver}
   make DESTDIR=${pkgdir} install
 
-  # license exception
-  install -Dm644 COPYING.EXCEPTION \
-    $pkgdir/usr/share/licenses/autoconf/COPYING.EXCEPTION
+  ## license exception
+  #install -Dm644 COPYING.EXCEPTION \
+    #$pkgdir/usr/share/licenses/autoconf/COPYING.EXCEPTION
 
   # conflict with bintuils
   rm -f ${pkgdir}/usr/share/info/standards.info
