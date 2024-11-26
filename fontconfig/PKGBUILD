@@ -24,6 +24,7 @@ makedepends=(gcc
 depends=(gcc-libs
          expat
          freetype)
+install=${_realname}.install
 source=("https://www.freedesktop.org/software/fontconfig/release/fontconfig-${pkgver}.tar.xz"
         0010-fix-relocation.patch
         0011-conf-copy-instead-of-symlink.patch
