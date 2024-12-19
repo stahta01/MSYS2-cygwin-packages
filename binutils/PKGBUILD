@@ -42,6 +42,9 @@ prepare() {
 
 build() {
   cd "${srcdir}"/binutils-${CARCH}
+
+  export LDFLAGS+=" -static-libgcc"
+
   ../binutils-${pkgver}/configure \
     --prefix=/usr \
     --{build,host,target}=${CHOST} \
