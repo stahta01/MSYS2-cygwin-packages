@@ -47,7 +47,6 @@ prepare() {
 build() {
   mkdir -p "build-${MSYSTEM_CARCH}-static" && cd "build-${MSYSTEM_CARCH}-static"
 
-  MSYS2_ARG_CONV_EXCL="--prefix=" \
     meson setup \
       --default-library=static \
       --prefix="${MSYSTEM_PREFIX}" \
@@ -66,7 +65,6 @@ build() {
   cd ..
   mkdir -p "build-${MSYSTEM_CARCH}-shared" && cd "build-${MSYSTEM_CARCH}-shared"
 
-  MSYS2_ARG_CONV_EXCL="--prefix=" \
     meson setup \
       --default-library=shared \
       --prefix="${MSYSTEM_PREFIX}" \
